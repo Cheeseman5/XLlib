@@ -23,6 +23,13 @@ Private pSignature As String
 
 Private pFontName As String
 
+Enum EmailBodyFontType
+    Plain = 1
+    RichText = 2
+    HTML = 3
+End Enum
+
+Private pBodyType As EmailBodyFontType
 
 
 Private pInit As Boolean
@@ -33,7 +40,7 @@ Public Function Init()
         Set pOutlook = CreateObject("Outlook.Application")
         Set pDraft = pOutlook.CreateItem(0)
         
-        
+        pBodyType = Plain
         
         pInit = True
     End If
@@ -67,4 +74,89 @@ Public Property Let ToField(value As String)
     End If
 End Property
 
+Public Property Get CCField() As String
+    If IsInit Then
+        CCField = pCC
+    End If
+End Property
+Public Property Let CCField(value As String)
+    If IsInit Then
+        pCC = value
+    End If
+End Property
+
+Public Property Get BCCField() As String
+    If IsInit Then
+        BCCField = pBCC
+    End If
+End Property
+Public Property Let BCCField(value As String)
+    If IsInit Then
+        pBCC = value
+    End If
+End Property
+
+Public Property Get Body() As String
+    If IsInit Then
+        Body = pBody
+    End If
+End Property
+Public Property Let Body(value As String)
+    If IsInit Then
+        pBody = value
+    End If
+End Property
+
+Public Property Get Signature() As String
+    If IsInit Then
+        Signature = pSignature
+    End If
+End Property
+Public Property Let Signature(value As String)
+    If IsInit Then
+        pSignature = value
+    End If
+End Property
+
+Public Property Get FontName() As String
+    If IsInit Then
+        FontName = pFontName
+    End If
+End Property
+Public Property Let Signature(value As String)
+    If IsInit Then
+        pFontName = value
+    End If
+End Property
+
 ' End Boiler plate
+
+Public Function Send()
+    If IsInit Then
+        
+    End If
+End Function
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
