@@ -22,6 +22,8 @@ Private pFooter As String   ' internal use
 Private pSignature As String
 
 Private pFontName As String
+Private pInitialSig As String
+
 
 Enum EmailBodyFontType
     Plain = 1
@@ -48,6 +50,14 @@ End Function
 
 Private Function IsInit() As Boolean
     IsInit = pInit
+End Function
+
+Private Function HasOutlook() As Boolean
+    HasOutlook = Not pOutlook Is Nothing
+End Function
+
+Private Function HasDraft() As Boolean
+    HasDraft = Not pDraft Is Nothing
 End Function
 
 ' Boiler plate
@@ -123,7 +133,7 @@ Public Property Get FontName() As String
         FontName = pFontName
     End If
 End Property
-Public Property Let Signature(value As String)
+Public Property Let FontName(value As String)
     If IsInit Then
         pFontName = value
     End If
@@ -131,13 +141,84 @@ End Property
 
 ' End Boiler plate
 
+Private Function ConstructEmail()
+    If IsInit And HasDraft Then
+        
+        ' Notes on changing the "From" field
+        '   pOutlook.Session.Accounts(index)
+        '   pOutlook.SendUsingAccount = pOutlook.Session.Accounts(1)
+        '   pOutlook.SentOnBehalfOfName = """SenderName"" <Reply@Address.com>"
+        
+        With pDraft
+            .To = pTo
+            .CC = pCC
+            .BCC = pBCC
+            .Subject pSubject
+            
+            Select Case pBodyType
+                
+            End Select
+            
+        End With
+        
+    End If
+End Function
+
 Public Function Send()
     If IsInit Then
+        
+        
+        Destroy
+    End If
+End Function
+
+Public Function Display()
+    If IsInit And (Not pDraft Is Nothing) Then
+        pDraft.Display
+        
+        Select Case pBodyType
+            Case EmailBodyFontType.HTML
+                pInitialSig = pDraft.HTMLBody
+            Case Else
+                pInitialSig = pDraft.Body
+        End Select
+    End If
+End Function
+
+Public Function GetSignature(signatureName As String) As String
+    If IsInit Then
+        Dim sig As String
+        
+        sig = Environ("appdata") & "\Microsoft\Signatures\"
+        
+        If Dir(sig, vbDirectory) <> vbNullString Then
+            sig = sig & Dir$(signatureName & "*.htm")
+        Else
+            sig = ""
+        End If
+        
+        sig = CreateObject("Scripting.FileSystemObject").GetFile(sig).OpenAsTextStream(1, -2).ReadAll
+        
+        GetSignature = sig
+    End If
+End Function
+
+' TODO: Make public once a good fix is found.  Currently needs to
+'       run pDraft.Display in order to copy signature
+Private Function GetMsgSig() As String
+    If IsInit And HasDraft Then
+    
+        GetMsgSig = pInitialSig
         
     End If
 End Function
 
 
+
+Public Function Destroy()
+    Set pOutlook = Nothing
+    Set pDraft = Nothing
+End Function
 
 
 
