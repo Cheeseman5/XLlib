@@ -7,6 +7,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
+' EmailOutlook - Simple interface to send emails from Outlook.
 
 Option Explicit
 
@@ -57,7 +58,7 @@ Public Function Init()
 End Function
 
 Private Function IsInit() As Boolean
-    IsInit = pInit
+    IsInit = pInit And HasDraft
 End Function
 
 Private Function HasOutlook() As Boolean
@@ -85,57 +86,66 @@ Public Property Let FromField(value As String)
     End If
 End Property
 
-Public Property Get Subject() As String
-    If IsInit Then
-        Subject = pSubject
-    End If
-End Property
-Public Property Let Subject(value As String)
-    If IsInit Then
-        pSubject = value
-    End If
-End Property
-
 Public Property Get ToField() As String
     If IsInit Then
-        ToField = pTo
+        ToField = pDraft.To
     End If
 End Property
 Public Property Let ToField(value As String)
     If IsInit Then
-        pTo = value
+        pDraft.To = value
     End If
 End Property
 
 Public Property Get CCField() As String
     If IsInit Then
-        CCField = pCC
+        CCField = pDraft.CC
     End If
 End Property
 Public Property Let CCField(value As String)
     If IsInit Then
-        pCC = value
+        pDraft.CC = value
     End If
 End Property
 
 Public Property Get BCCField() As String
     If IsInit Then
-        BCCField = pBCC
+        BCCField = pDraft.BCC
     End If
 End Property
 Public Property Let BCCField(value As String)
     If IsInit Then
-        pBCC = value
+        pDraft.BCC = value
+    End If
+End Property
+
+Public Property Get Subject() As String
+    If IsInit Then
+        Subject = pDraft.Subject
+    End If
+End Property
+Public Property Let Subject(value As String)
+    If IsInit Then
+        pDraft.Subject = value
     End If
 End Property
 
 Public Property Get Body() As String
     If IsInit Then
-        Body = pBody
+        If pBodyType = Plain Then
+            Body = pDraft.Body
+        Else
+            Body = pDraft.HTMLBody
+        End If
     End If
 End Property
 Public Property Let Body(value As String)
     If IsInit Then
+        If pBodyType = Plain Then
+            pDraft.Body = value
+        Else
+            pDraft.HTMLBody = value
+        End If
         pBody = value
     End If
 End Property
@@ -265,6 +275,7 @@ Public Function Destroy()
     Set pOutlook = Nothing
     Set pDraft = Nothing
 End Function
+
 
 
 
