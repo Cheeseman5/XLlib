@@ -7,15 +7,23 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-' EmailOutlook - Simple interface to send emails from Outlook.
+
+Option Explicit
+
+Private Const pDEBUG = True
 
 Private pOutlook As Object
 Private pDraft As Object
+
+
+Private Const NEW_LINE = "<br>"
+Private Const CHAR_TAB = "&emsp;" '"&nbsp &nbsp &nbsp &nbsp "
 
 Private pFrom As String
 Private pTo As String
 Private pCC As String
 Private pBCC As String
+Private pSubject As String
 Private pHeader As String   ' internal use
 Private pBody As String
 Private pFooter As String   ' internal use
@@ -42,7 +50,7 @@ Public Function Init()
         Set pOutlook = CreateObject("Outlook.Application")
         Set pDraft = pOutlook.CreateItem(0)
         
-        pBodyType = Plain
+        pBodyType = HTML
         
         pInit = True
     End If
@@ -60,6 +68,10 @@ Private Function HasDraft() As Boolean
     HasDraft = Not pDraft Is Nothing
 End Function
 
+Private Function IsDebugging() As Boolean
+    IsDebugging = pDEBUG
+End Function
+
 ' Boiler plate
 
 Public Property Get FromField() As String
@@ -70,6 +82,17 @@ End Property
 Public Property Let FromField(value As String)
     If IsInit Then
         pFrom = value
+    End If
+End Property
+
+Public Property Get Subject() As String
+    If IsInit Then
+        Subject = pSubject
+    End If
+End Property
+Public Property Let Subject(value As String)
+    If IsInit Then
+        pSubject = value
     End If
 End Property
 
@@ -141,6 +164,10 @@ End Property
 
 ' End Boiler plate
 
+Public Function TabChar(Optional count = 1) As String
+    TabChar = "<span style='mso-tab-count:" & count & "'>&nbsp;</span>"
+End Function
+
 Private Function ConstructEmail()
     If IsInit And HasDraft Then
         
@@ -150,13 +177,22 @@ Private Function ConstructEmail()
         '   pOutlook.SentOnBehalfOfName = """SenderName"" <Reply@Address.com>"
         
         With pDraft
-            .To = pTo
-            .CC = pCC
-            .BCC = pBCC
-            .Subject pSubject
+            .To = ToField
+            .CC = CCField
+            .BCC = BCCField
+            .Subject = pSubject
+            
+            ' header
+            pHeader = "<font face=" & FontName & ">"
+            ' footer
+            pFooter = "</font>"
             
             Select Case pBodyType
-                
+                Case EmailBodyFontType.HTML
+                    .HTMLBody = pHeader & Body & pFooter & Signature
+                Case Else
+                    '.Body = pHeader & Body & pFooter & Signature
+                    .Body = Body & Signature
             End Select
             
         End With
@@ -166,15 +202,19 @@ End Function
 
 Public Function Send()
     If IsInit Then
+        ConstructEmail
         
-        
-        Destroy
+        ' HACK: for testing only!!
+        Display
+        'Destroy
     End If
 End Function
 
 Public Function Display()
     If IsInit And (Not pDraft Is Nothing) Then
         pDraft.Display
+        
+        ConstructEmail
         
         Select Case pBodyType
             Case EmailBodyFontType.HTML
@@ -186,21 +226,27 @@ Public Function Display()
 End Function
 
 Public Function GetSignature(signatureName As String) As String
-    If IsInit Then
-        Dim sig As String
+    Dim fso As Object
+    Dim ts As Object
+    Dim fileName As String
+    Dim str As String
+    
+    fileName = Environ("appdata") & "\Microsoft\Signatures\" & signatureName & ".htm"
+    
+    If Dir(fileName) <> "" Then
+    
+        Set fso = CreateObject("Scripting.FileSystemObject")
+        Set ts = fso.GetFile(fileName).OpenAsTextStream(1, -2)
+        str = ts.ReadAll
         
-        sig = Environ("appdata") & "\Microsoft\Signatures\"
-        
-        If Dir(sig, vbDirectory) <> vbNullString Then
-            sig = sig & Dir$(signatureName & "*.htm")
-        Else
-            sig = ""
-        End If
-        
-        sig = CreateObject("Scripting.FileSystemObject").GetFile(sig).OpenAsTextStream(1, -2).ReadAll
-        
-        GetSignature = sig
+        If Not ts Is Nothing Then ts.Close
+    Else
+        MsgBox "Signature """ & signatureName & """ not found!  Please check the name." & vbCrLf & _
+            "Using empty signature..."
+        str = ""
     End If
+    
+    GetSignature = str
 End Function
 
 ' TODO: Make public once a good fix is found.  Currently needs to
