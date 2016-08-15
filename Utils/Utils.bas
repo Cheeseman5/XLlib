@@ -12,7 +12,8 @@ Function AnounceError(err As Variant, Optional message As String)
         MsgBox "Message: " & message & vbNewLine & "Error code: " & err & vbNewLine & "Error: " & Error$(err)
     End If
     
-    Utils.EnableDrawing True
+    'Edit: this call should be up to the user, not run by default
+    'Utils.EnableDrawing True
 End Function
 
 Function GetSetting(sh As Worksheet, settingName As String) As String
