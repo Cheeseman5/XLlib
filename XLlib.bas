@@ -76,7 +76,9 @@ End Function
 ' Opens or gets the instance of a workbook
 Public Function GetWorkbook(fName As String) As Workbook
     Dim wbName As String
-    Dim fso As Object 'New Scripting.FileSystemObject
+    Dim fso As Object
+    
+    Set fso = CreateObject("Scripting.FileSystemObject")
     
     wbName = fso.GetBaseName(ParseFPath(fName))
     If IsWorkbookOpen(wbName) Then
