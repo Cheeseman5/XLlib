@@ -131,3 +131,52 @@ Public Function FindHeader(sh As Worksheet, hdrName As String, Optional r As Int
         Set FindHeader = Nothing
     End If
 End Function
+
+Public Function ExistsInCollection(list As Collection, val As Variant) As Boolean
+    On Error Resume Next
+    
+    list.item val
+    ExistsInCollection = (Err.Number = 0)
+    
+    Err.Clear
+    On Error GoTo 0
+End Function
+
+Public Function CollectionGetItemSafe(list As Collection, val As Variant) As Variant
+    On Error GoTo ErrEnter
+
+    Dim itm As Variant
+    
+    itm = list.item(val)
+    CollectionGetItemSafe = itm
+    Exit Function
+    
+ErrEnter:
+    CollectionGetItemSafe = Null
+    Err.Clear
+End Function
+
+
+Public Function IsArrayEmpty(arr As Variant) As Boolean
+    On Error Resume Next
+    If ArrayLenth(arr) = 0 Then
+        IsArrayEmpty = True
+    Else
+        IsArrayEmpty = False
+    End If
+    On Error GoTo 0
+End Function
+
+Public Function ArrayLenth(arr As Variant) As Integer
+    On Error GoTo ErrorEnter
+    
+    ArrayLenth = UBound(arr) - LBound(arr) + 1
+    
+ErrorExit:
+    On Error GoTo 0
+    Exit Function
+ErrorEnter:
+    ArrayLenth = 0
+    Err.Clear
+    Resume ErrorExit
+End Function
