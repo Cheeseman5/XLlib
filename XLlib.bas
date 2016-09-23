@@ -1,40 +1,7 @@
-' Simple way of finding a value within a Range
-Public Function FindValInRange(strToFind As String, rgToSearch As Range) As Range
-    Dim val As Range
-    If Not rgToSearch Is Nothing Then
-        Set val = rgToSearch.EntireColumn.Find(strToFind, _
-                                            LookAt:=xlPart, _
-                                            LookIn:=xlValues, _
-                                            SearchOrder:=xlByColumns)
-        If Not val Is Nothing Then
-            Set FindValInRange = val
-            Set val = Nothing
-            Exit Function
-        End If
-    End If
-    
-    Set val = Nothing
-    Set FindValInRange = Nothing
-End Function
 
-' SheetExists - Checks if a worksheet with a specified name exists within the given workbook.
-Public Function SheetExists(wb As Workbook, shName As String, Optional isCaseSensitive = False) As Boolean
-    Dim compMethod
-    
-    If isCaseSensitive Then
-        compMethod = vbBinaryCompare
-    Else
-        compMethod = vbTextCompare
-    End If
-    
-    For Each sh In wb.Worksheets
-        If StrComp(sh.Name, shName, compMethod) = 0 Then
-            SheetExists = True
-            Exit Function
-        End If
-    Next
-End Function
 
+
+'----[ File handling ]-------------------------------------------------------
 ' Check if a file exists
 Public Function FileExists(fName As String) As Boolean
     Dim fso As Object
@@ -73,6 +40,7 @@ Public Function ParseFPath(fName As String) As String
     ParseFPath = fName
 End Function
 
+'----[ Excel references ]--------------------------------------
 ' Opens or gets the instance of a workbook
 Public Function GetWorkbook(fName As String) As Workbook
     Dim wbName As String
@@ -105,6 +73,25 @@ Public Function IsWorkbookOpen(strWorkBookName As String) As Boolean
     End If
 End Function
 
+' SheetExists - Checks if a worksheet with a specified name exists within the given workbook.
+Public Function SheetExists(wb As Workbook, shName As String, Optional isCaseSensitive = False) As Boolean
+    Dim compMethod
+    
+    If isCaseSensitive Then
+        compMethod = vbBinaryCompare
+    Else
+        compMethod = vbTextCompare
+    End If
+    
+    For Each sh In wb.Worksheets
+        If StrComp(sh.Name, shName, compMethod) = 0 Then
+            SheetExists = True
+            Exit Function
+        End If
+    Next
+End Function
+
+'----[ Searching Ranges ]------------------------------------------
 ' LastUsedRow - Returns last/bottom row with data in it or 0 (zero) if nothing found.
 Public Function LastUsedRow(sh As Worksheet) As Integer
     Dim rg As Range
@@ -124,7 +111,7 @@ End Function
 
 ' FindHeader - returns the header's Range object or Nothing if not found
 ' Param <r>: row to search. Default 1.
-Public Function FindHeader(sh As Worksheet, hdrName As String, Optional r As Integer = 1) As Range
+Public Function FindHeader(ByRef sh As Worksheet, hdrName As String, Optional r As Integer = 1) As Range
     If Not sh Is Nothing Then
         Set FindHeader = sh.cells(r).EntireRow.Find(hdrName, LookIn:=xlValues, SearchOrder:=xlByRows)
     Else
@@ -132,6 +119,26 @@ Public Function FindHeader(sh As Worksheet, hdrName As String, Optional r As Int
     End If
 End Function
 
+' Simple way of finding a value within a Range
+Public Function FindValInRange(strToFind As String, rgToSearch As Range) As Range
+    Dim val As Range
+    If Not rgToSearch Is Nothing Then
+        Set val = rgToSearch.EntireColumn.Find(strToFind, _
+                                            LookAt:=xlPart, _
+                                            LookIn:=xlValues, _
+                                            SearchOrder:=xlByColumns)
+        If Not val Is Nothing Then
+            Set FindValInRange = val
+            Set val = Nothing
+            Exit Function
+        End If
+    End If
+    
+    Set val = Nothing
+    Set FindValInRange = Nothing
+End Function
+
+'----[ Collection helpers ]--------------------------------------------------------------
 Public Function ExistsInCollection(list As Collection, val As Variant) As Boolean
     On Error Resume Next
     
@@ -156,7 +163,7 @@ ErrEnter:
     Err.Clear
 End Function
 
-
+'----[ Array helpers ]-------------------------------------------------
 Public Function IsArrayEmpty(arr As Variant) As Boolean
     On Error Resume Next
     If ArrayLenth(arr) = 0 Then
